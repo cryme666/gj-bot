@@ -12,10 +12,10 @@ bot = telebot.TeleBot(API_KEY)
 user_orders = {}
 user_comments = {}  
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start','order'])
 def start(message):
     markup = InlineKeyboardMarkup()
-    
+
     btn_products = InlineKeyboardButton("Переглянути продукти", callback_data='view_products')
     markup.add(btn_products)
     
@@ -83,7 +83,7 @@ def confirm_order(call):
             total_price += price
             text += f"{product['name']} - {quantity} шт. на {price} грн\n"
 
-        text += f"\nЗагальна вартість: {total_price} грн"
+        text += f"\nЗагальна вартість: {total_price} грн\nВ коментарі можна написати кімнату"
         
         markup = InlineKeyboardMarkup()
         btn_add_comment = InlineKeyboardButton("Додати коментар", callback_data="add_comment")
@@ -107,7 +107,7 @@ def add_comment(call):
 def save_comment(message, call):
     user_comments[message.from_user.id] = message.text
     
-    bot.send_message(message.chat.id, 'Ваш коментар збережено!')
+    bot.send_message(message.chat.id, 'Ваш коментар збережено!\nНатисніть підтвердити замовлення')
 
     confirm_order(call)
 
@@ -139,8 +139,9 @@ def finalize_order(call):
         bot.edit_message_text(
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
-            text='Ваше замовлення прийнято! ✅'
+            text='Ваше замовлення прийнято!✅\nВ разі затримки або додаткових питань @crymeph'
         )
+        bot.send_message(call.message.chat.id,'Щоб замовити знову введи команду /order')
 
 def bot_start():
     bot.send_message(admins[0],'Бот запущений')
